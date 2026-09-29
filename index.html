@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forex Confluence Desk</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f1f4f7;--sf:#fff;--ln:#d5dde5;--tx:#17222d;--mu:#5d7083;--up:#0a7f96;--dn:#c2570c;--ac:#2b5fd9;--wn:#9a6b00;--gr:#e8edf2}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1620;--sf:#15202c;--ln:#263545;--tx:#dbe5ee;--mu:#8194a6;--up:#4cc3d9;--dn:#f2994a;--ac:#7a9bff;--wn:#e3b341;--gr:#1d2b3a}}
+:root[data-theme=dark]{--bg:#0e1620;--sf:#15202c;--ln:#263545;--tx:#dbe5ee;--mu:#8194a6;--up:#4cc3d9;--dn:#f2994a;--ac:#7a9bff;--wn:#e3b341;--gr:#1d2b3a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.num,td.n{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--ln)}
+h1{font-size:18px;margin:0}h2{font-size:14px;margin:0 0 8px}
+.badge{padding:3px 9px;border:1px solid var(--wn);color:var(--wn);border-radius:99px;font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px;align-items:center}
+select,input,textarea,button{font:inherit;color:var(--tx);background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:6px 9px}
+button{cursor:pointer;background:var(--ac);color:#fff;border-color:var(--ac)}button.g{background:var(--sf);color:var(--tx);border-color:var(--ln)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.grid,.g2{display:grid;gap:12px;padding:0 16px 12px}.grid{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:12px;min-width:0}
+.tg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--mu);margin-bottom:6px}.tg label{display:flex;gap:4px;align-items:center}
+canvas{width:100%;height:420px;display:block}@media(max-width:600px){canvas{height:320px}}
+.v{font-size:22px;font-weight:700;padding:10px;border-radius:6px;border:2px solid;text-align:center;margin-bottom:8px}
+.v.L{color:var(--up);border-color:var(--up)}.v.S{color:var(--dn);border-color:var(--dn);border-style:dashed}.v.W{color:var(--mu);border-color:var(--mu);border-style:dotted}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:4px 6px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:top}
+.sc{overflow-x:auto}.up{color:var(--up)}.dn{color:var(--dn)}.mu{color:var(--mu)}
+.warn{border-left:3px solid var(--wn);padding:3px 8px;margin:4px 0;background:var(--gr);font-size:13px}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal-card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:20px;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.modal-card h2{margin-top:0}
+.modal-card button{width:100%;margin-top:12px;padding:10px;font-size:14px}
+ul{margin:4px 0;padding-left:18px}.f{display:grid;grid-template-columns:auto 1fr;gap:2px 8px}.in{display:grid;grid-template-columns:1fr 1fr;gap:6px}.in label{display:grid;gap:2px;font-size:12px;color:var(--mu)}
+small{color:var(--mu)}textarea{width:100%;min-height:70px}
+</style></head><body>
+<div id="riskModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="riskModalTitle">
+<div class="modal-card">
+<h2 id="riskModalTitle">Before you start</h2>
+<p>This tool provides <b>technical analysis only</b>. It is not financial advice, and it does not predict markets, guarantee profits, or eliminate risk.</p>
+<p>Every LONG/SHORT candidate is a count of agreeing technical factors, not a probability of success — and can still be wrong.</p>
+<p><b>Most retail forex traders lose money.</b> Never risk more than you can afford to lose, and confirm every trade against your own judgment and risk limits.</p>
+<button id="riskAckBtn">I understand — continue</button>
+</div></div>
+<header><h1>Forex confluence desk</h1><span id="badge" class="badge"></span></header>
+<div class="bar">
+<select id="pair" aria-label="Pair"></select><select id="tf" aria-label="Entry timeframe"></select>
+<button id="go">Analyze</button><button id="reseed" class="g">New simulated run</button>
+<span class="mu" id="stamp"></span></div>
+<main>
+<div class="grid">
+<section class="card"><div class="tg">
+<label><input type="checkbox" id="oE" checked>EMA 20/50/200</label><label><input type="checkbox" id="oB">Bollinger</label>
+<label><input type="checkbox" id="oS" checked>Support/resistance</label><label><input type="checkbox" id="oM" checked>Structure</label>
+<label><input type="checkbox" id="oF" checked>Zones &amp; FVG</label>
+<label>Bars <select id="bars"><option>60</option><option selected>110</option><option>200</option></select></label></div>
+<canvas id="chart" role="img" aria-label="Candlestick chart with overlays"></canvas>
+<small>Hollow candle = up, filled = down. EMA20 solid, EMA50 dashed, EMA200 dotted.</small></section>
+<aside class="card" id="decision"><h2>Decision</h2><p class="mu">Press Analyze.</p></aside></div>
+
+<div class="g2">
+<section class="card"><h2>Multi-timeframe</h2><div class="sc" id="mtf"></div></section>
+<section class="card"><h2>Why this result</h2><div id="why"></div></section>
+<section class="card"><h2>Scenarios and invalidation</h2><div id="scen"></div></section>
+<section class="card"><h2>Risk calculator</h2><div class="in" id="rk">
+<label>Account equity<input id="bal" type="number" value="10000" min="1"></label>
+<label>Account currency<select id="acct"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>NGN</option></select></label>
+<label>Risk % (hard cap 5)<input id="rp" type="number" value="1" step="0.25" min="0.1"></label>
+<label>Stop-loss (pips)<input id="slp" type="number" value="20" min="1"></label>
+<label>Lot type<select id="lot"><option>standard</option><option>mini</option><option>micro</option></select></label>
+<label>Spread (pips)<input id="spr" type="number" value="1" step="0.1" min="0"></label>
+<label>Slippage (pips)<input id="slip" type="number" value="1" step="0.1" min="0"></label>
+<label>Commission / std lot (round-turn, acct ccy)<input id="com" type="number" value="0" step="0.5" min="0"></label>
+<label>Leverage (1:x, margin only)<input id="lev" type="number" value="30" min="1"></label>
+<label>FX rates you trust (e.g. USDJPY=150.2, USDNGN=1550)<input id="rates" type="text" placeholder="only needed for cross-currency conversion"></label></div><div id="rout"></div></section>
+<section class="card"><h2>News and calendar</h2>
+<div id="newsStat" class="warn">No events entered. News risk shows as unknown.</div>
+<small>Paste upcoming high-impact events, one per line: <code>time,currency,event,impact</code> — impact is H/M/L. Time must end in <code>Z</code> or an offset (rows without one are rejected); shown in Africa/Lagos. Example: <code>2026-09-30T12:30:00Z,USD,Non-Farm Payrolls,H</code></small>
+<textarea id="newsIn" placeholder="2026-09-30T12:30:00Z,USD,Non-Farm Payrolls,H"></textarea>
+<button id="newsSave" class="g">Save events</button>
+<div id="newsList" class="sc"></div>
+<small class="mu">You type these in yourself (e.g. from a calendar site) — nothing here is fetched or invented automatically. A connected calendar MCP connector is a possible future upgrade once one is linked.</small></section>
+<section class="card"><h2>Chart screenshot cross-check</h2>
+<div id="ssGate" class="warn">Checking whether this view can analyze images…</div>
+<div id="ssBody" hidden>
+<input type="file" id="ssFile" accept="image/png,image/jpeg,image/webp">
+<button id="ssGo" class="g">Analyze screenshot</button>
+<div id="ssPrev"></div><div id="ssOut"></div>
+<small class="mu">Sent to Claude for a visual read only; it does not see your account or place trades. Compared against the computed confluence score, not treated as a signal on its own.</small>
+</div></section>
+<section class="card"><h2>Backtest (entry timeframe)</h2><button id="bt" class="g">Run backtest</button><div id="btout" class="sc"></div></section>
+<section class="card"><h2>Data source</h2>
+<label><input type="checkbox" id="liveToggle" disabled> Use live Twelve Data prices</label>
+<label><input type="checkbox" id="demoToggle"> Demo mode (simulated prices; never produces a candidate)</label>
+<div id="liveStat" class="warn">Checking for a connected live-data tool…</div>
+<div class="tg"><label>Import as <select id="csvTf"></select></label><label><input type="checkbox" id="csvBulk"> Bulk paste (multiple timeframes)</label></div>
+<small id="csvHelp">One candle per line: <code>time,open,high,low,close</code>. Time must end in <code>Z</code> or an offset like <code>+00:00</code> (otherwise the row is rejected). Manual imports win over live data for that timeframe.</small>
+<textarea id="csv" placeholder="2026-09-24T10:00:00Z,1.0850,1.0860,1.0842,1.0855"></textarea>
+<button id="lc" class="g">Load CSV</button> <button id="ud" class="g">Clear imports / use simulated data</button>
+<div id="csvStat" class="sc"></div><div id="csvMsg"></div>
+<small class="mu">Per-timeframe source (live / imported / simulated) is shown in the Multi-timeframe table below.</small></section>
+<section class="card"><h2>Trade journal</h2><textarea id="jn" placeholder="What did you see? Why did you take or skip it?"></textarea><button id="js" class="g">Save entry</button><div id="jl"></div></section>
+<section class="card"><h2>Broker execution</h2><div class="warn"><b>DISABLED.</b> This tool never places orders and no broker is connected. Enabling execution would need a separate, explicit confirmation step that does not exist in this version.</div></section>
+<section class="card"><h2>Analysis history</h2><div id="hl" class="sc"></div></section>
+</div>
+<p style="padding:0 16px 24px" class="mu"><small>Educational analysis tool, not financial advice. Confluence is not probability, and past or simulated performance does not predict future results. Most retail forex traders lose money.</small></p>
+</main>
+<script>
+"use strict";
+/* embedded modules: data-validation, risk-management, no-trade-gates, decision-engine (comments stripped) */
+
+const DataPrep=(function(){
+function parseUTC(raw, opts = {}) {
+  const { assumeUTC = false } = opts;
+  // Epoch milliseconds passed straight through (already unambiguous).
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    return { ok: true, t: raw };
+  }
+  const s = String(raw).trim();
+  if (!s) return { ok: false, error: 'Empty timestamp.' };
+  // Normalize "YYYY-MM-DD HH:MM:SS" -> "YYYY-MM-DDTHH:MM:SS" for Date.parse.
+  const isoish = s.includes('T') ? s : s.replace(' ', 'T');
+  // Explicit UTC ('Z') or a numeric offset (+HH:MM / -HH:MM / +HHMM) present?
+  const hasExplicitOffset = /Z$/i.test(isoish) || /[+-]\d{2}:?\d{2}$/.test(isoish);
+  let candidate = isoish;
+  if (!hasExplicitOffset) {
+    if (!assumeUTC) {
+      return {
+        ok: false,
+        error:
+          `Timestamp "${raw}" has no explicit UTC offset (append "Z" or ` +
+          `"+00:00"). Ambiguous local times are rejected, not guessed.`,
+      };
+    }
+    candidate = isoish + 'Z';
+  }
+  const t = Date.parse(candidate);
+  if (Number.isNaN(t)) {
+    return { ok: false, error: `Timestamp "${raw}" could not be parsed as a date.` };
+  }
+  return { ok: true, t };
+}
+function sortAndDedupeCandles(candles) {
+  const sorted = candles.slice().sort((a, b) => a.t - b.t);
+  const out = [];
+  const duplicates = [];
+  for (const candle of sorted) {
+    const prev = out[out.length - 1];
+    if (prev && prev.t === candle.t) {
+      duplicates.push(candle);
+      out[out.length - 1] = candle; // keep the later occurrence
+    } else {
+      out.push(candle);
+    }
+  }
+  return { candles: out, duplicateCount: duplicates.length, duplicates };
+}
+function validateOHLC(candle) {
+  const { o, h, l, c } = candle;
+  const errors = [];
+  const values = [o, h, l, c];
+  if (values.some((v) => typeof v !== 'number' || !Number.isFinite(v) || v <= 0)) {
+    errors.push('one or more OHLC values is missing, non-numeric, or not positive');
+    return { ok: false, errors }; // no point checking relationships on bad numbers
+  }
+  const minOC = Math.min(o, c);
+  const maxOC = Math.max(o, c);
+  if (l > minOC) errors.push(`low (${l}) > min(open, close) (${minOC})`);
+  if (h < maxOC) errors.push(`high (${h}) < max(open, close) (${maxOC})`);
+  if (h < l) errors.push(`high (${h}) < low (${l})`);
+  return { ok: errors.length === 0, errors };
+}
+function detectGaps(candles, expectedIntervalMinutes, opts = {}) {
+  const toleranceMinutes = opts.toleranceMinutes ?? Math.max(expectedIntervalMinutes * 3, 72 * 60);
+  const gaps = [];
+  for (let i = 1; i < candles.length; i++) {
+    const deltaMinutes = (candles[i].t - candles[i - 1].t) / 60000;
+    if (deltaMinutes > toleranceMinutes) {
+      gaps.push({ afterIndex: i - 1, fromT: candles[i - 1].t, toT: candles[i].t, deltaMinutes });
+    }
+  }
+  return gaps;
+}
+function prepareCandles(rawRows, opts = {}) {
+  const { source = 'csv', minBars = 210, expectedIntervalMinutes = null } = opts;
+  const assumeUTC = source === 'live';
+  const rejected = [];
+  const parsed = [];
+  for (const row of rawRows) {
+    const ts = parseUTC(row.t, { assumeUTC });
+    if (!ts.ok) {
+      rejected.push({ row, reason: ts.error });
+      continue;
+    }
+    const candle = { t: ts.t, o: +row.o, h: +row.h, l: +row.l, c: +row.c };
+    const ohlc = validateOHLC(candle);
+    if (!ohlc.ok) {
+      rejected.push({ row, reason: ohlc.errors.join('; ') });
+      continue;
+    }
+    parsed.push(candle);
+  }
+  const { candles, duplicateCount } = sortAndDedupeCandles(parsed);
+  const gaps = expectedIntervalMinutes ? detectGaps(candles, expectedIntervalMinutes) : [];
+  if (candles.length < minBars) {
+    rejected.push({
+      row: null,
+      reason: `Only ${candles.length} valid candle(s) survived validation; ${minBars} required.`,
+    });
+  }
+  return {
+    ok: candles.length >= minBars,
+    source,
+    totalInput: rawRows.length,
+    candles,
+    duplicateCount,
+    gaps,
+    rejected,
+  };
+}
+function emaOfSeries(values, period) {
+  const out = new Array(values.length).fill(null);
+  const firstIdx = values.findIndex((v) => v != null);
+  if (firstIdx === -1) return out;
+  const usable = values.slice(firstIdx);
+  if (usable.length < period) return out; // not enough data to seed at all
+  let seed = 0;
+  for (let i = 0; i < period; i++) seed += usable[i];
+  seed /= period;
+  const k = 2 / (period + 1);
+  out[firstIdx + period - 1] = seed;
+  let prev = seed;
+  for (let i = period; i < usable.length; i++) {
+    prev = usable[i] * k + prev * (1 - k);
+    out[firstIdx + i] = prev;
+  }
+  return out;
+}
+function ema(closes, period) {
+  return emaOfSeries(closes, period);
+}
+function macd(closes, opts = {}) {
+  const { fast = 12, slow = 26, signalPeriod = 9 } = opts;
+  const emaFast = emaOfSeries(closes, fast);
+  const emaSlow = emaOfSeries(closes, slow);
+  const macdLine = closes.map((_, i) =>
+    emaFast[i] == null || emaSlow[i] == null ? null : emaFast[i] - emaSlow[i]
+  );
+  const signalLine = emaOfSeries(macdLine, signalPeriod);
+  const histogram = closes.map((_, i) =>
+    macdLine[i] == null || signalLine[i] == null ? null : macdLine[i] - signalLine[i]
+  );
+  return { macdLine, signalLine, histogram };
+}
+function formatLagos(ms) {
+  return new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Lagos', year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(ms) + ' WAT';
+}
+const DataPrep = {
+  formatLagos,
+  parseUTC,
+  sortAndDedupeCandles,
+  validateOHLC,
+  detectGaps,
+  prepareCandles,
+  emaOfSeries,
+  ema,
+  macd,
+};
+// Works whether this file is loaded as a plain <script> (existing dashboard
+// style) or as a CommonJS module (for unit testing with Node/Jest).
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = DataPrep;
+}
+return DataPrep;
+})();
+const RiskMargin=(function(){
+const LOT_SIZES = Object.freeze({
+  standard: 100000,
+  mini: 10000,
+  micro: 1000,
+  nano: 100,
+});
+function contractSize(lotType) {
+  if (typeof lotType === 'number') {
+    if (!Number.isFinite(lotType) || lotType <= 0) {
+      return { ok: false, error: `Custom contract size must be a positive number, got ${lotType}.` };
+    }
+    return { ok: true, units: lotType };
+  }
+  const units = LOT_SIZES[lotType];
+  if (units == null) {
+    return {
+      ok: false,
+      error: `Unknown lot type "${lotType}". Use one of: ${Object.keys(LOT_SIZES).join(', ')}, or pass a custom unit count.`,
+    };
+  }
+  return { ok: true, units };
+}
+// Quote currencies conventionally traded at 2 decimal places (pip = 0.01)
+// rather than the usual 4 decimals (pip = 0.0001). This list is a heuristic
+// covering the common cases (JPY, and low-unit-value exotics like NGN,
+// HUF, KRW) — always confirm the exact convention with your broker for any
+// symbol not on a major venue, since exotic pip definitions do vary.
+const TWO_DECIMAL_QUOTE_CCY = new Set(['JPY', 'NGN', 'HUF', 'KRW', 'IDR']);
+function splitSymbol(symbol) {
+  const s = String(symbol || '').toUpperCase().replace('/', '');
+  if (!/^[A-Z]{6}$/.test(s)) {
+    return { ok: false, error: `"${symbol}" isn't a recognizable 6-letter symbol (e.g. "EURUSD").` };
+  }
+  return { ok: true, base: s.slice(0, 3), quote: s.slice(3, 6) };
+}
+function pipSize(symbol) {
+  const parsed = splitSymbol(symbol);
+  if (!parsed.ok) return parsed;
+  return { ok: true, pip: TWO_DECIMAL_QUOTE_CCY.has(parsed.quote) ? 0.01 : 0.0001 };
+}
+function convertAmount(amount, fromCcy, toCcy, rates, _seen = new Set()) {
+  if (fromCcy === toCcy) return { ok: true, value: amount, path: [fromCcy] };
+  const direct = fromCcy + toCcy;
+  const inverse = toCcy + fromCcy;
+  if (rates[direct] != null) {
+    return { ok: true, value: amount * rates[direct], path: [direct] };
+  }
+  if (rates[inverse] != null) {
+    return { ok: true, value: amount / rates[inverse], path: [`${inverse} (inverted)`] };
+  }
+  // Bridge through USD, once, avoiding infinite recursion on repeated calls.
+  const bridgeKey = `${fromCcy}->${toCcy}`;
+  if (fromCcy !== 'USD' && toCcy !== 'USD' && !_seen.has(bridgeKey)) {
+    _seen.add(bridgeKey);
+    const leg1 = convertAmount(amount, fromCcy, 'USD', rates, _seen);
+    if (leg1.ok) {
+      const leg2 = convertAmount(leg1.value, 'USD', toCcy, rates, _seen);
+      if (leg2.ok) return { ok: true, value: leg2.value, path: [...leg1.path, ...leg2.path] };
+    }
+  }
+  return {
+    ok: false,
+    error: `No rate available to convert ${fromCcy} -> ${toCcy} (checked "${direct}", "${inverse}", and a USD bridge). Supply one of these in \`rates\`.`,
+  };
+}
+function pipValuePerLot(symbol, opts = {}) {
+  const { lotType = 'standard', accountCurrency = 'USD', rates = {} } = opts;
+  const sym = splitSymbol(symbol);
+  if (!sym.ok) return sym;
+  const pip = pipSize(symbol);
+  if (!pip.ok) return pip;
+  const lot = contractSize(lotType);
+  if (!lot.ok) return lot;
+  const pipValueInQuoteCcy = lot.units * pip.pip;
+  const converted = convertAmount(pipValueInQuoteCcy, sym.quote, accountCurrency, rates);
+  if (!converted.ok) return converted;
+  return {
+    ok: true,
+    valuePerLot: converted.value,
+    pip: pip.pip,
+    units: lot.units,
+    base: sym.base,
+    quote: sym.quote,
+    path: converted.path,
+  };
+}
+function effectiveStopDistancePips(entryPrice, stopPrice, pip, costs = {}) {
+  const { spreadPips = 0, slippagePips = 0 } = costs;
+  for (const [name, v] of [['entryPrice', entryPrice], ['stopPrice', stopPrice], ['pip', pip]]) {
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+      return { ok: false, error: `${name} must be a positive number, got ${v}.` };
+    }
+  }
+  if (entryPrice === stopPrice) {
+    return { ok: false, error: 'Entry price and stop price are identical — stop distance is zero.' };
+  }
+  if (spreadPips < 0 || slippagePips < 0) {
+    return { ok: false, error: 'spreadPips and slippagePips must not be negative.' };
+  }
+  const rawPips = Math.abs(entryPrice - stopPrice) / pip;
+  return { ok: true, rawPips, effectivePips: rawPips + spreadPips + slippagePips };
+}
+function calculatePositionSize(input) {
+  const {
+    symbol,
+    accountCurrency = 'USD',
+    equity,
+    riskPercent,
+    maxRiskPercent = 5,
+    entryPrice,
+    stopPrice,
+    lotType = 'standard',
+    spreadPips = 0,
+    slippagePips = 0,
+    commissionPerStandardLotRoundTurn = 0,
+    rates = {},
+  } = input;
+  const errors = [];
+  if (typeof equity !== 'number' || !Number.isFinite(equity) || equity <= 0) {
+    errors.push(`equity must be a positive number, got ${equity}.`);
+  }
+  if (typeof riskPercent !== 'number' || !Number.isFinite(riskPercent) || riskPercent <= 0) {
+    errors.push(`riskPercent must be a positive number, got ${riskPercent}.`);
+  }
+  if (errors.length) return { ok: false, errors };
+  const pip = pipSize(symbol);
+  if (!pip.ok) return { ok: false, errors: [pip.error] };
+  const stop = effectiveStopDistancePips(entryPrice, stopPrice, pip.pip, { spreadPips, slippagePips });
+  if (!stop.ok) return { ok: false, errors: [stop.error] };
+  const pv = pipValuePerLot(symbol, { lotType, accountCurrency, rates });
+  if (!pv.ok) return { ok: false, errors: [pv.error] };
+  const warnings = [];
+  const cappedRiskPercent = Math.min(riskPercent, maxRiskPercent);
+  if (riskPercent > maxRiskPercent) {
+    warnings.push(`Requested risk ${riskPercent}% exceeds the ${maxRiskPercent}% cap; capped to ${maxRiskPercent}%.`);
+  }
+  if (cappedRiskPercent > 2) {
+    warnings.push(`${cappedRiskPercent}% risk on a single trade is aggressive; most risk frameworks suggest ≤1–2%.`);
+  }
+  const riskAmount = (equity * cappedRiskPercent) / 100;
+  const lots = riskAmount / (stop.effectivePips * pv.valuePerLot);
+  const units = lots * pv.units;
+  // Commission is conventionally quoted per STANDARD (100k) lot round-turn;
+  // scale it by however many standard-lot-equivalents this position is.
+  const standardLotEquivalents = units / LOT_SIZES.standard;
+  const commissionCost = standardLotEquivalents * commissionPerStandardLotRoundTurn;
+  const plannedMonetaryLoss = riskAmount + commissionCost;
+  if (stop.effectivePips - stop.rawPips > stop.rawPips) {
+    warnings.push('Spread + slippage add up to more than the raw stop distance itself — check these costs are realistic for this symbol/broker.');
+  }
+  return {
+    ok: true,
+    lots,
+    units,
+    rawStopPips: stop.rawPips,
+    effectiveStopPips: stop.effectivePips,
+    riskAmount,
+    commissionCost,
+    plannedMonetaryLoss,
+    pipValuePerLot: pv.valuePerLot,
+    cappedRiskPercent,
+    warnings,
+  };
+}
+function calculateRequiredMargin(input) {
+  const { symbol, units, price, leverage, accountCurrency = 'USD', rates = {} } = input;
+  const sym = splitSymbol(symbol);
+  if (!sym.ok) return sym;
+  for (const [name, v] of [['units', units], ['price', price], ['leverage', leverage]]) {
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+      return { ok: false, error: `${name} must be a positive number, got ${v}.` };
+    }
+  }
+  // Notional value of the position is in the BASE currency (e.g. EUR for
+  // EURJPY), not the quote currency and not the pair's own quoted price —
+  // fix for CB-3, where the old code multiplied units by the quoted price
+  // as if that were always a base->account conversion factor.
+  const notionalInBase = units;
+  const converted = convertAmount(notionalInBase, sym.base, accountCurrency, rates);
+  if (!converted.ok) return converted;
+  return { ok: true, requiredMargin: converted.value / leverage, path: converted.path };
+}
+const RiskMargin = {
+  LOT_SIZES,
+  contractSize,
+  splitSymbol,
+  pipSize,
+  convertAmount,
+  pipValuePerLot,
+  effectiveStopDistancePips,
+  calculatePositionSize,
+  calculateRequiredMargin,
+};
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = RiskMargin;
+}
+return RiskMargin;
+})();
+const NoTradeGates=(function(){
+// Defaults reflect the audit's RM-4 correction: a 30-minute post-event
+// window was too short for releases like NFP/CPI/central-bank decisions,
+// which routinely produce elevated volatility and wide spreads well beyond
+// half an hour. 60 min pre / 120 min post is the recommended default;
+// both are fully configurable per call.
+const DEFAULT_HIGH_IMPACT_WINDOW = Object.freeze({ preMinutes: 60, postMinutes: 120 });
+const DEFAULT_MEDIUM_IMPACT_WINDOW = Object.freeze({ preMinutes: 15, postMinutes: 30 });
+// Below this, a configured high-impact post-window is allowed (the caller
+// may have a good reason) but flagged, since it reproduces the specific
+// under-protective behavior the audit called out.
+const RECOMMENDED_MIN_HIGH_IMPACT_POST_MINUTES = 60;
+function validateWindow(window, label) {
+  if (
+    !window ||
+    typeof window.preMinutes !== 'number' ||
+    typeof window.postMinutes !== 'number' ||
+    !Number.isFinite(window.preMinutes) ||
+    !Number.isFinite(window.postMinutes) ||
+    window.preMinutes < 0 ||
+    window.postMinutes < 0
+  ) {
+    return `${label} must be {preMinutes, postMinutes} with non-negative finite numbers.`;
+  }
+  return null;
+}
+function minutesUntil(eventTimeUTC, nowUTC) {
+  return (eventTimeUTC - nowUTC) / 60000;
+}
+function evaluateNewsRisk(events, opts = {}) {
+  const {
+    pairCurrencies,
+    nowUTC = Date.now(),
+    highImpactWindow = DEFAULT_HIGH_IMPACT_WINDOW,
+    mediumImpactWindow = DEFAULT_MEDIUM_IMPACT_WINDOW,
+  } = opts;
+  if (!Array.isArray(pairCurrencies) || pairCurrencies.length !== 2) {
+    return { ok: false, error: 'pairCurrencies must be a [base, quote] array, e.g. ["EUR","USD"].' };
+  }
+  const winErr = validateWindow(highImpactWindow, 'highImpactWindow') || validateWindow(mediumImpactWindow, 'mediumImpactWindow');
+  if (winErr) return { ok: false, error: winErr };
+  if (!Array.isArray(events)) return { ok: false, error: 'events must be an array.' };
+  const warnings = [];
+  if (highImpactWindow.postMinutes < RECOMMENDED_MIN_HIGH_IMPACT_POST_MINUTES) {
+    warnings.push(
+      `High-impact post-event window is set to ${highImpactWindow.postMinutes} minutes, below the ` +
+      `recommended ${RECOMMENDED_MIN_HIGH_IMPACT_POST_MINUTES}-minute minimum — major releases can stay ` +
+      `volatile longer than this.`
+    );
+  }
+  const relevant = events.filter((e) => pairCurrencies.includes(e.ccy));
+  const blockReasons = [];
+  for (const e of relevant) {
+    const mins = minutesUntil(e.t, nowUTC); // positive = upcoming, negative = already happened
+    const label = mins >= 0 ? `in ${mins.toFixed(0)}m` : `${Math.abs(mins).toFixed(0)}m ago`;
+    if (e.imp === 'H') {
+      const inBlockWindow = mins >= 0 ? mins <= highImpactWindow.preMinutes : Math.abs(mins) <= highImpactWindow.postMinutes;
+      if (inBlockWindow) {
+        blockReasons.push(
+          `High-impact ${e.ccy} event "${e.name}" ${label} — inside the ` +
+          `${highImpactWindow.preMinutes}min-before/${highImpactWindow.postMinutes}min-after no-trade window.`
+        );
+      }
+    } else if (e.imp === 'M') {
+      const inWarnWindow = mins >= 0 ? mins <= mediumImpactWindow.preMinutes : Math.abs(mins) <= mediumImpactWindow.postMinutes;
+      if (inWarnWindow) {
+        warnings.push(`Medium-impact ${e.ccy} event "${e.name}" ${label} — increased volatility possible; not a hard block.`);
+      }
+    }
+    // 'L' impact is recorded by the news store but never affects this gate.
+  }
+  if (blockReasons.length === 0) {
+    const nextHigh = relevant
+      .filter((e) => e.imp === 'H' && minutesUntil(e.t, nowUTC) > highImpactWindow.preMinutes)
+      .sort((a, b) => minutesUntil(a.t, nowUTC) - minutesUntil(b.t, nowUTC))[0];
+    if (nextHigh) {
+      const m = minutesUntil(nextHigh.t, nowUTC);
+      warnings.push(`Next high-impact ${nextHigh.ccy} event: "${nextHigh.name}" in ${m.toFixed(0)} minutes.`);
+    }
+  }
+  return {
+    ok: true,
+    block: blockReasons.length > 0,
+    blockReasons,
+    warnings,
+    relevantEventCount: relevant.length,
+  };
+}
+// Matches the multiplier convention already used elsewhere in the
+// dashboard (stale if age exceeds 3x the timeframe's own bar interval).
+const DEFAULT_STALE_MULTIPLIER = 3;
+function evaluateTimeframeFreshness(tf, lastCandleTimeUTC, opts = {}) {
+  const { intervalMinutes, nowUTC = Date.now(), staleMultiplier = DEFAULT_STALE_MULTIPLIER } = opts;
+  if (typeof intervalMinutes !== 'number' || !Number.isFinite(intervalMinutes) || intervalMinutes <= 0) {
+    return { ok: false, error: `intervalMinutes for "${tf}" must be a positive number.` };
+  }
+  if (typeof lastCandleTimeUTC !== 'number' || !Number.isFinite(lastCandleTimeUTC)) {
+    return { ok: false, error: `No valid last-candle UTC timestamp for "${tf}".` };
+  }
+  const ageMs = nowUTC - lastCandleTimeUTC;
+  const thresholdMs = intervalMinutes * 60000 * staleMultiplier;
+  return {
+    ok: true,
+    tf,
+    ageMinutes: ageMs / 60000,
+    thresholdMinutes: thresholdMs / 60000,
+    stale: ageMs > thresholdMs,
+  };
+}
+function evaluateDataFreshness(timeframes, opts = {}) {
+  const { criticalTimeframes = [], nowUTC = Date.now(), staleMultiplier = DEFAULT_STALE_MULTIPLIER } = opts;
+  const blockReasons = [];
+  const warnings = [];
+  const missing = [];
+  const perTimeframe = {};
+  for (const tf of Object.keys(timeframes || {})) {
+    const entry = timeframes[tf];
+    const isCritical = criticalTimeframes.includes(tf);
+    if (!entry || entry.lastCandleTimeUTC == null) {
+      missing.push(tf);
+      const msg = `No data loaded for "${tf}".`;
+      if (isCritical) blockReasons.push(`${msg} This timeframe feeds the higher-timeframe bias and is required.`);
+      else warnings.push(msg);
+      continue;
+    }
+    const r = evaluateTimeframeFreshness(tf, entry.lastCandleTimeUTC, {
+      intervalMinutes: entry.intervalMinutes,
+      nowUTC,
+      staleMultiplier,
+    });
+    if (!r.ok) {
+      warnings.push(r.error);
+      continue;
+    }
+    perTimeframe[tf] = r;
+    if (r.stale) {
+      const msg =
+        `${tf} data is stale: last candle ${r.ageMinutes.toFixed(0)}m old ` +
+        `(threshold ${r.thresholdMinutes.toFixed(0)}m), source=${entry.source || 'unknown'}.`;
+      if (isCritical) blockReasons.push(msg);
+      else warnings.push(msg);
+    }
+  }
+  // A critical timeframe named by the caller but never present in
+  // `timeframes` at all (not even a missing/empty entry) still needs to
+  // block — otherwise a caller who simply forgot to pass it would silently
+  // skip the check instead of failing safe.
+  for (const tf of criticalTimeframes) {
+    if (!(tf in (timeframes || {}))) {
+      missing.push(tf);
+      blockReasons.push(`No data supplied at all for required higher-timeframe "${tf}".`);
+    }
+  }
+  return {
+    ok: true,
+    block: blockReasons.length > 0,
+    blockReasons,
+    warnings,
+    missing,
+    perTimeframe,
+  };
+}
+function evaluateNoTradeGates(gateResults) {
+  const blockReasons = [];
+  const warnings = [];
+  for (const [name, result] of Object.entries(gateResults || {})) {
+    if (!result) continue;
+    if (result.ok === false) {
+      warnings.push(`"${name}" gate could not be evaluated: ${result.error}`);
+      continue;
+    }
+    if (Array.isArray(result.blockReasons)) blockReasons.push(...result.blockReasons);
+    if (Array.isArray(result.warnings)) warnings.push(...result.warnings);
+  }
+  return { noTrade: blockReasons.length > 0, blockReasons, warnings };
+}
+const NoTradeGates = {
+  DEFAULT_HIGH_IMPACT_WINDOW,
+  DEFAULT_MEDIUM_IMPACT_WINDOW,
+  DEFAULT_STALE_MULTIPLIER,
+  evaluateNewsRisk,
+  evaluateTimeframeFreshness,
+  evaluateDataFreshness,
+  evaluateNoTradeGates,
+};
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = NoTradeGates;
+}
+return NoTradeGates;
+})();
+const DecisionEngine=(function(){
+function nearestLevels(swings, i, price, atrAtI) {
+  const tol = (atrAtI || price * 0.001) * 0.6;
+  const points = swings
+    .filter((s) => s.conf <= i)
+    .slice(-16)
+    .map((s) => s.p)
+    .sort((a, b) => a - b);
+  const merged = [];
+  for (const p of points) {
+    const last = merged[merged.length - 1];
+    if (last && p - last.p <= tol) {
+      last.p = (last.p * last.n + p) / (last.n + 1);
+      last.n++;
+    } else {
+      merged.push({ p, n: 1 });
+    }
+  }
+  return merged;
+}
+function stopDistance(swings, atr, i, price, direction) {
+  const at = atr[i] || 0;
+  const relevant = swings.filter((s) => s.conf <= i && s.type === (direction > 0 ? 'L' : 'H'));
+  const last = relevant[relevant.length - 1];
+  const raw = last ? Math.abs(price - last.p) + 0.5 * at : 2 * at;
+  return { raw, effective: Math.max(raw, at) };
+}
+const CLUSTER_WEIGHTS = Object.freeze({
+  trend_location: 1.0,
+  momentum: 1.0,
+  pattern: 0.5,
+});
+function computeFactors(series, i) {
+  const { C, c, e, rsi, macd, atr, adx, bb, swings, tr } = series;
+  const price = c[i];
+  const factors = [];
+  const push = (name, cluster, weight, value, text) => factors.push({ name, cluster, weight, value, text });
+  // --- trend_location cluster ---
+  push(
+    'structure',
+    'trend_location',
+    1,
+    tr[i] ?? 0,
+    tr[i] > 0 ? 'Bullish, last break was up' : tr[i] < 0 ? 'Bearish, last break was down' : 'No confirmed structure'
+  );
+  {
+    let s = 0;
+    [[20, 50], [50, 100], [100, 200]].forEach(([a, b]) => {
+      if (e[a][i] != null && e[b][i] != null) s += Math.sign(e[a][i] - e[b][i]);
+    });
+    if (e[20][i] != null) s += Math.sign(price - e[20][i]);
+    push(
+      'emaAlignment',
+      'trend_location',
+      1,
+      s / 4,
+      s >= 3 ? 'Bullish stack, price above EMA20' : s <= -3 ? 'Bearish stack, price below EMA20' : 'Mixed or tangled EMAs'
+    );
+  }
+  {
+    const levels = nearestLevels(swings, i, price, atr[i]);
+    const at = atr[i] || 0;
+    const support = levels.filter((l) => l.p <= price).pop();
+    const resist = levels.find((l) => l.p > price);
+    const nearSupport = support && price - support.p < 0.8 * at;
+    const nearResist = resist && resist.p - price < 0.8 * at;
+    push(
+      'location',
+      'trend_location',
+      1,
+      nearSupport && !nearResist ? 0.8 : nearResist && !nearSupport ? -0.8 : 0,
+      nearSupport && nearResist
+        ? 'Squeezed between levels'
+        : nearSupport
+        ? `Near support ${support.p.toFixed(5)}`
+        : nearResist
+        ? `Near resistance ${resist.p.toFixed(5)}`
+        : 'Mid-range, no nearby level'
+    );
+  }
+  {
+    const mid = bb.mid[i], up = bb.up[i];
+    const pos = mid != null && up != null ? (price - mid) / (up - mid || 1e-9) : 0;
+    push(
+      'bollinger',
+      'trend_location',
+      1,
+      pos > 1 ? -0.25 : pos > 0 ? 0.5 : pos < -1 ? 0.25 : -0.5,
+      mid == null
+        ? 'Bollinger not yet available'
+        : pos > 1
+        ? 'Above upper band (stretched)'
+        : pos > 0
+        ? 'Above midline'
+        : pos < -1
+        ? 'Below lower band (stretched)'
+        : 'Below midline'
+    );
+  }
+  {
+    // ADX contributes DIRECTION here (folded into the correlated cluster,
+    // since a strong ADX in a given direction just echoes `structure`) —
+    // its MAGNITUDE is used separately, once, as a trend-strength gate in
+    // decide() below. This is the fix for the old code's double use of
+    // ADX (once as an 8th "independent" vote, again as a raw gate).
+    const adxI = adx[i];
+    push(
+      'adxDirection',
+      'trend_location',
+      0.5,
+      adxI != null && adxI >= 25 ? Math.sign(tr[i] || 0) : 0,
+      adxI == null ? 'ADX not yet available' : `ADX ${adxI.toFixed(0)}` + (adxI >= 25 ? ', trending' : adxI >= 18 ? ', developing' : ', weak/ranging')
+    );
+  }
+  // --- momentum cluster ---
+  {
+    const r = rsi[i];
+    push(
+      'rsi',
+      'momentum',
+      1,
+      r == null ? 0 : r > 50 ? (r > 70 ? -0.25 : 0.5) : r < 30 ? 0.25 : -0.5,
+      r == null ? 'RSI not yet available' : `RSI ${r.toFixed(0)}` + (r > 70 ? ' overbought' : r < 30 ? ' oversold' : r > 50 ? ', bullish momentum' : ', bearish momentum')
+    );
+  }
+  {
+    const h = macd.histogram[i];
+    const hp = i > 0 ? macd.histogram[i - 1] : null;
+    push(
+      'macd',
+      'momentum',
+      1,
+      h == null ? 0 : h > 0 ? (hp != null && h > hp ? 1 : 0.4) : hp != null && h < hp ? -1 : -0.4,
+      h == null
+        ? 'MACD not yet available'
+        : (h > 0 ? 'Histogram positive' : 'Histogram negative') + (hp != null ? (h > hp === h > 0 ? ', strengthening' : ', fading') : '')
+    );
+  }
+  // --- pattern cluster (single-bar, least correlated with the rest) ---
+  {
+    const k = C[i], q = i > 0 ? C[i - 1] : null;
+    let cp = 0, ct = 'No notable pattern';
+    if (k && q) {
+      const bd = Math.abs(k.c - k.o), rg = k.h - k.l || 1e-9;
+      if (k.c > k.o && q.c < q.o && k.c > q.o && k.o < q.c) { cp = 1; ct = 'Bullish engulfing'; }
+      else if (k.c < k.o && q.c > q.o && k.c < q.o && k.o > q.c) { cp = -1; ct = 'Bearish engulfing'; }
+      else if (bd < rg * 0.3 && Math.min(k.o, k.c) - k.l > rg * 0.6) { cp = 1; ct = 'Bullish pin bar'; }
+      else if (bd < rg * 0.3 && k.h - Math.max(k.o, k.c) > rg * 0.6) { cp = -1; ct = 'Bearish pin bar'; }
+      else if (bd < rg * 0.1) { ct = 'Doji (indecision)'; }
+    }
+    push('candlePattern', 'pattern', 0.75, cp, ct);
+  }
+  return factors;
+}
+function computeClusterScores(factors) {
+  const byCluster = {};
+  for (const f of factors) (byCluster[f.cluster] = byCluster[f.cluster] || []).push(f);
+  const clusters = {};
+  for (const [name, members] of Object.entries(byCluster)) {
+    const totalWeight = members.reduce((s, f) => s + f.weight, 0) || 1;
+    const weightedSum = members.reduce((s, f) => s + f.weight * f.value, 0);
+    clusters[name] = { score: weightedSum / totalWeight, weight: CLUSTER_WEIGHTS[name] ?? 1, members };
+  }
+  return clusters;
+}
+function overallScoreFromClusters(clusters) {
+  let sum = 0, weightSum = 0;
+  for (const c of Object.values(clusters)) { sum += c.weight * c.score; weightSum += c.weight; }
+  return weightSum ? sum / weightSum : 0;
+}
+function clusterAgreementCount(clusters, direction) {
+  const names = Object.keys(clusters);
+  const agreeing = names.filter((n) => Math.sign(clusters[n].score) === direction);
+  return { agreeing: agreeing.length, total: names.length, agreeingClusters: agreeing };
+}
+function biasAt(tfSeries, idx) {
+  if (idx == null || idx < 0) return null;
+  const e50 = tfSeries.e[50][idx], e200 = tfSeries.e[200][idx];
+  if (e50 == null || e200 == null) return null;
+  return Math.sign((tfSeries.tr[idx] || 0) + Math.sign(e50 - e200));
+}
+function indexAtOrBefore(candles, asOfUTC) {
+  let lo = 0, hi = candles.length - 1, ans = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (candles[mid].t <= asOfUTC) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+  }
+  return ans;
+}
+function resolveHigherTimeframeBias(timeframeMap, opts = {}) {
+  const { criticalTimeframes = [], asOfUTC = Date.now(), maxAgeMultiplier = 3 } = opts;
+  const resolvedFrom = [];
+  const missing = [];
+  const signs = [];
+  for (const tf of criticalTimeframes) {
+    const s = timeframeMap[tf];
+    if (!s || !s.C || !s.C.length) { missing.push(tf); continue; }
+    const idx = indexAtOrBefore(s.C, asOfUTC);
+    if (idx < 0) { missing.push(tf); continue; }
+    if (s.intervalMinutes) {
+      const ageMinutes = (asOfUTC - s.C[idx].t) / 60000;
+      if (ageMinutes > s.intervalMinutes * maxAgeMultiplier) { missing.push(`${tf} (stale as of that time)`); continue; }
+    }
+    const sign = biasAt(s, idx);
+    if (sign == null) { missing.push(tf); continue; }
+    signs.push(sign);
+    resolvedFrom.push(tf);
+  }
+  if (!signs.length) return { sign: null, resolvedFrom, missing };
+  const hasPos = signs.some((x) => x > 0), hasNeg = signs.some((x) => x < 0);
+  const sign = hasPos && hasNeg ? 0 : Math.sign(signs.reduce((a, b) => a + b, 0));
+  return { sign, resolvedFrom, missing };
+}
+const DEFAULT_THRESHOLDS = Object.freeze({
+  minAbsScore: 0.35, // on the cluster-weighted ~[-1,1] scale
+  minClusterAgreement: 2, // out of 3 clusters
+  minAdx: 18,
+  minRRRatio: 1.5,
+  volatilitySpikeRatio: 2,
+  volatilityWarnRatio: 1.5,
+  atrLookback: 100,
+});
+function decide(input) {
+  const {
+    series,
+    i,
+    higherTimeframeBias = { sign: null, resolvedFrom: [], missing: ['not supplied'] },
+    noTradeGates = { noTrade: false, blockReasons: [], warnings: [] },
+    thresholds = {},
+  } = input;
+  const T = { ...DEFAULT_THRESHOLDS, ...thresholds };
+  const price = series.c[i];
+  const atrI = series.atr[i];
+  const adxI = series.adx[i];
+  const factors = computeFactors(series, i);
+  const clusters = computeClusterScores(factors);
+  const score = overallScoreFromClusters(clusters);
+  const direction = score === 0 ? 0 : Math.sign(score);
+  const agreement = clusterAgreementCount(clusters, direction);
+  const blockReasons = [];
+  const warnings = [];
+  if (direction === 0) blockReasons.push('Overall confluence score is exactly neutral.');
+  if (Math.abs(score) < T.minAbsScore) {
+    blockReasons.push(`Confluence score ${Math.abs(score).toFixed(2)} is below the ${T.minAbsScore} minimum.`);
+  }
+  if (agreement.agreeing < T.minClusterAgreement) {
+    blockReasons.push(`Only ${agreement.agreeing} of ${agreement.total} indicator clusters agree (need ${T.minClusterAgreement}).`);
+  }
+  if (adxI == null || adxI < T.minAdx) {
+    blockReasons.push(`ADX ${adxI == null ? 'unavailable' : adxI.toFixed(0)} is below the ${T.minAdx} trend-strength minimum.`);
+  }
+  if (higherTimeframeBias.sign == null) {
+    blockReasons.push('Higher-timeframe bias is not resolvable (missing or insufficient data).');
+  } else if (higherTimeframeBias.sign === 0) {
+    blockReasons.push('Higher-timeframe bias is neutral or conflicting.');
+  } else if (direction !== 0 && higherTimeframeBias.sign !== direction) {
+    blockReasons.push('Direction opposes the higher-timeframe bias.');
+  }
+  const evalDirection = direction || 1; // for stop/level geometry only; verdict already NO_TRADE if direction===0
+  const stop = stopDistance(series.swings, series.atr, i, price, evalDirection);
+  const levels = nearestLevels(series.swings, i, price, atrI);
+  const nextOpposing =
+    evalDirection >= 0
+      ? levels.find((l) => l.p > price + 0.1 * (atrI || 0))
+      : levels.slice().reverse().find((l) => l.p < price - 0.1 * (atrI || 0));
+  const rrRatio = nextOpposing ? Math.abs(nextOpposing.p - price) / stop.effective : null;
+  if (rrRatio != null && rrRatio < 1) {
+    blockReasons.push(`Nearest opposing level leaves under 1R of room (ratio ${rrRatio.toFixed(2)}).`);
+  } else if (rrRatio != null && rrRatio < T.minRRRatio) {
+    warnings.push(`Risk/reward to the next opposing level is poor (ratio ${rrRatio.toFixed(2)}).`);
+  }
+  // Volatility check over a window ending AT i, not a global tail — this
+  // is what keeps it backtest-safe. (The original inline implementation
+  // used the series' global last-100-bar tail regardless of which index
+  // was being evaluated; harmless when only ever called "live," but a
+  // genuine look-ahead bug the moment the same code is reused inside a
+  // backtest loop, which is exactly what unifying live+backtest does.)
+  const atrWindow = series.atr.slice(Math.max(0, i - T.atrLookback + 1), i + 1).filter((v) => v != null);
+  const atrMean = atrWindow.length ? atrWindow.reduce((a, b) => a + b, 0) / atrWindow.length : null;
+  if (atrMean && atrI) {
+    const ratio = atrI / atrMean;
+    if (ratio > T.volatilitySpikeRatio) blockReasons.push(`Volatility is ${ratio.toFixed(1)}x its recent average.`);
+    else if (ratio > T.volatilityWarnRatio) warnings.push(`Volatility is unusually high (${ratio.toFixed(1)}x average).`);
+  }
+  if (noTradeGates.noTrade) blockReasons.push(...noTradeGates.blockReasons);
+  warnings.push(...(noTradeGates.warnings || []));
+  const verdict = blockReasons.length > 0 ? 'NO_TRADE' : direction > 0 ? 'LONG_CANDIDATE' : 'SHORT_CANDIDATE';
+  const setup =
+    verdict === 'NO_TRADE'
+      ? null
+      : {
+          direction,
+          entryZone: direction > 0 ? [price - 0.25 * (atrI || 0), price] : [price, price + 0.25 * (atrI || 0)],
+          stopLoss: price - direction * stop.effective,
+          takeProfits: [1.5, 2.5, 4].map((m) => price + direction * stop.effective * m),
+          rr: [1.5, 2.5, 4],
+          stopDistance: stop.effective,
+        };
+  return {
+    verdict,
+    direction,
+    score,
+    clusters,
+    factors,
+    clusterAgreement: agreement,
+    higherTimeframeBias,
+    blockReasons,
+    warnings,
+    setup,
+    price,
+    atr: atrI,
+    adx: adxI,
+  };
+}
+function runBacktest(opts) {
+  const {
+    series,
+    timeframeMap = null,
+    criticalTimeframes = [],
+    thresholds = {},
+    warmup = 210,
+    timeoutBars = 60,
+  } = opts;
+  const trades = [];
+  const L = series.C.length;
+  for (let i = warmup; i < L - 2; i++) {
+    const asOfUTC = series.C[i].t;
+    const higherTimeframeBias = timeframeMap
+      ? resolveHigherTimeframeBias(timeframeMap, { criticalTimeframes, asOfUTC })
+      : { sign: null, resolvedFrom: [], missing: ['no timeframeMap supplied to runBacktest'] };
+    const result = decide({ series, i, higherTimeframeBias, thresholds });
+    if (result.verdict === 'NO_TRADE') continue;
+    const d = result.direction;
+    const entry = series.C[i + 1].o; // enter at NEXT bar's open — signal known at close of i, no look-ahead
+    const dist = result.setup.stopDistance;
+    const sl = entry - d * dist;
+    const tp = entry + d * dist * 2.5;
+    let outcomeR = null;
+    let j = i + 1;
+    for (; j < Math.min(i + 1 + timeoutBars, L); j++) {
+      const x = series.C[j];
+      if (d > 0 ? x.l <= sl : x.h >= sl) { outcomeR = -1; break; }
+      if (d > 0 ? x.h >= tp : x.l <= tp) { outcomeR = 2.5; break; }
+    }
+    if (outcomeR === null) {
+      j = Math.min(i + timeoutBars, L - 1);
+      outcomeR = ((series.c[j] - entry) / dist) * d;
+    }
+    trades.push({ i, entryIndex: i + 1, direction: d, outcomeR, verdict: result.verdict, score: result.score });
+    i = j;
+  }
+  return trades;
+}
+const DecisionEngine = {
+  CLUSTER_WEIGHTS,
+  DEFAULT_THRESHOLDS,
+  nearestLevels,
+  stopDistance,
+  computeFactors,
+  computeClusterScores,
+  resolveHigherTimeframeBias,
+  decide,
+  runBacktest,
+};
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = DecisionEngine;
+}
+return DecisionEngine;
+})();
+/* ============ STATE / HELPERS ============ */
+const $=s=>document.querySelector(s),TFS=['1m','5m','15m','1h','4h','1d'],MIN={'1m':1,'5m':5,'15m':15,'1h':60,'4h':240,'1d':1440};
+const PAIRS={EURUSD:1.085,GBPUSD:1.27,USDJPY:150,AUDUSD:.66,USDCAD:1.36,USDCHF:.88,NZDUSD:.61,EURJPY:162,GBPJPY:190,EURGBP:.855};
+const st={pair:'EURUSD',tf:'15m',seed:1,manual:{},all:{},a:null,res:null,stamp:null,sample:null,news:[],mcp:null,live:false,src:{},liveErr:{},demo:false,liveMeta:{},gaps:{}};
+const TF2IV={'1m':'1min','5m':'5min','15m':'15min','1h':'1h','4h':'4h','1d':'1day'};
+const tdSymbol=p=>p.slice(0,3)+'/'+p.slice(3,6);
+function mcpErrMsg(e){const m={needs_reauth:'Reconnect Twelve Data in Settings \u2192 Connectors.',server_not_connected:'Add Twelve Data in Settings \u2192 Connectors.',
+ selection_required:'Choose which Twelve Data connector to use, in Settings \u2192 Connectors.',not_in_manifest:'This page isn\u2019t allowed to call Twelve Data for you right now.',
+ blocked_by_policy:'Your organization blocks this tool.',approval_required:'This call needs org approval first.',consent_required:'Allow Twelve Data when prompted, then try again.',
+ rate_limited:'Twelve Data rate limit hit \u2014 wait a moment and retry.',server_unavailable:'Twelve Data is temporarily unavailable.',selection:'',
+ tool_error:'Twelve Data reported an error'+(e.message?': '+e.message:'.'),cancelled:'Request cancelled.',server_not_found:'Twelve Data connector no longer found.'};
+ return m[e.code]||('Live data error ('+e.code+'): '+(e.message||''))}
+/* Parses Twelve Data's semicolon-delimited text payload (header row + data rows). */
+function parseTD(payload){let text=typeof payload==='string'?payload:(payload&&payload.text)?payload.text:JSON.stringify(payload||'');
+ const lines=text.trim().split(/\r?\n/);if(lines.length<2)return[];const hdr=lines[0].split(';').map(h=>h.trim().toLowerCase());
+ const di=hdr.indexOf('datetime'),oi=hdr.indexOf('open'),hi=hdr.indexOf('high'),li=hdr.indexOf('low'),ci=hdr.indexOf('close');
+ if([di,oi,hi,li,ci].some(x=>x<0))return[];const rows=[];
+ for(let i=1;i<lines.length;i++){const c=lines[i].split(';');if(c.length<hdr.length)continue;
+  rows.push({t:c[di].trim(),o:+c[oi],h:+c[hi],l:+c[li],c:+c[ci]})}
+ return rows}
+const hasManual=()=>Object.keys(st.manual).length>0;
+const dec=()=>st.pair.includes('JPY')?3:5,f=v=>v==null?'–':v.toFixed(dec()),pipS=()=>st.pair.includes('JPY')?.01:.0001;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtT=t=>DataPrep.formatLagos(+new Date(t));
+const SIMMSG='DATA UNAVAILABLE: only simulated prices are loaded, so no candidate is generated';
+const CRIT=['1d','4h'];
+const BrokerExec=Object.freeze({enabled:false,placeOrder(){throw new Error('Broker execution is disabled; no order was sent.')}});
+const mem={},store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):(mem[k]||d)}catch(e){return mem[k]||d}},set(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const sym=v=>v>0?'▲ Bullish':v<0?'▼ Bearish':'■ Neutral',cls=v=>v>0?'up':v<0?'dn':'mu';
+// Qualitative agreement band, replacing a bare "/100" score — a number that
+// visually mimics a win probability even with a disclaimer attached. This
+// counts agreeing factors, not statistical odds of success.
+function agreementBand(conf){return conf>=70?{label:'High agreement',cls:'up'}:conf>=45?{label:'Moderate agreement',cls:'mu'}:{label:'Low agreement',cls:'dn'}}
+
+/* ============ DATA ACQUISITION ============ */
+const Data={
+ demo(pair,tf,n=600){let h=0;for(const ch of pair+tf)h=(h*31+ch.charCodeAt(0))>>>0;let s=(h+st.seed*7919)>>>0;
+  const r=()=>(s=(s*1664525+1013904223)>>>0)/4294967296,m=MIN[tf],sig=PAIRS[pair]*.00035*Math.sqrt(m/15);
+  let p=PAIRS[pair]*(1+(r()-.5)*.02),drift=0,left=0;const now=Math.floor(Date.now()/(m*6e4))*m*6e4,out=[];
+  for(let i=0;i<n;i++){if(--left<=0){left=50+r()*110|0;drift=(r()-.5)*sig*.3}
+   const o=p;let hi=o,lo=o;for(let k=0;k<4;k++){p+=drift+(r()-.5)*sig*1.1;hi=Math.max(hi,p);lo=Math.min(lo,p)}
+   out.push({t:now-(n-1-i)*m*6e4,o,h:hi+r()*sig*.2,l:lo-r()*sig*.2,c:p})}return out},
+ parseCSV(txt){const o=[];for(const ln of txt.trim().split(/\r?\n/)){const c=ln.split(/[,;\t]/).map(x=>x.trim());if(c.length<5)continue;
+   const v=c.slice(1,5).map(Number);if(v.some(isNaN))continue;o.push({t:isNaN(+c[0])?c[0]:+c[0],o:v[0],h:v[1],l:v[2],c:v[3]})}return o},
+ /* Bulk format: a line naming the timeframe, e.g. "#1h" or "== 1h ==" or "[1h]", starts a new
+    section; every candle line after it (until the next tf header) is loaded into that tf. */
+ parseBulk(txt){const secs={},hdr=/^[#=\[]*\s*(1m|5m|15m|1h|4h|1d)\s*[\]=:]*\s*$/i;let cur=null;
+  for(const ln of txt.split(/\r?\n/)){const t=ln.trim();if(!t)continue;const m=t.match(hdr);
+   if(m){cur=m[1].toLowerCase();secs[cur]=secs[cur]||[];continue}
+   if(!cur)continue;const c=t.split(/[,;\t]/).map(x=>x.trim());if(c.length<5)continue;
+   const v=c.slice(1,5).map(Number);if(v.some(isNaN))continue;secs[cur].push({t:isNaN(+c[0])?c[0]:+c[0],o:v[0],h:v[1],l:v[2],c:v[3]})}
+  return secs},
+ async get(pair,tf){if(st.manual[tf]){st.src[tf]='csv';return st.manual[tf]}
+  if(st.live&&st.mcp){const raw=await Data.providers.twelveData(pair,tf);if(raw){const r=DataPrep.prepareCandles(raw,{source:'live',minBars:210,expectedIntervalMinutes:MIN[tf]});
+    if(r.ok){st.src[tf]='live';return r.candles}st.liveErr[tf]='Rejected live data: '+(r.rejected[0]?r.rejected[0].reason:'invalid')}}
+  if(st.demo){st.src[tf]='sim';return Data.demo(pair,tf)}
+  st.src[tf]='none';return null},
+ providers:{custom:null,
+  async twelveData(pair,tf){try{
+    const out=await st.mcp.callTool('Twelve Data','get_time_series',{symbol:tdSymbol(pair),interval:TF2IV[tf],outputsize:260},
+     {cache:{staleTime:tf==='1d'?300000:tf==='4h'?120000:tf==='1h'?60000:30000,gcTime:600000}});
+    const rows=parseTD(out.payload);if(rows.length<210)st.liveErr[tf]='Only '+rows.length+' live bars returned (need \u2265210).';
+    return rows}
+   catch(e){st.liveErr[tf]=mcpErrMsg(e);return null}}}};
+
+/* ============ INDICATORS ============ */
+const I={
+ ema:(a,n)=>DataPrep.ema(a,n),
+ rsi(c,n=14){let g=0,l=0;const o=Array(c.length).fill(null);for(let i=1;i<c.length;i++){const d=c[i]-c[i-1],u=Math.max(d,0),w=Math.max(-d,0);
+  if(i<=n){g+=u/n;l+=w/n}else{g=(g*(n-1)+u)/n;l=(l*(n-1)+w)/n}if(i>=n)o[i]=l?100-100/(1+g/l):100}return o},
+ macd:c=>DataPrep.macd(c),
+ atrAdx(C,n=14){const L=C.length,atr=Array(L).fill(null),adx=Array(L).fill(null),dx=[];let a=0,P=0,M=0,ax=null;
+  for(let i=1;i<L;i++){const x=C[i],q=C[i-1],t=Math.max(x.h-x.l,Math.abs(x.h-q.c),Math.abs(x.l-q.c)),up=x.h-q.h,dn=q.l-x.l,p=up>dn&&up>0?up:0,m=dn>up&&dn>0?dn:0;
+   if(i<=n){a+=t;P+=p;M+=m;if(i<n)continue}else{a+=t-a/n;P+=p-P/n;M+=m-M/n}
+   atr[i]=a/n;const pi=100*P/a,mi=100*M/a,d=100*Math.abs(pi-mi)/((pi+mi)||1);dx.push(d);
+   if(dx.length===n)ax=dx.reduce((s,v)=>s+v)/n;else if(dx.length>n)ax=(ax*(n-1)+d)/n;if(ax!=null)adx[i]=ax}
+  return{atr,adx}},
+ bb(c,n=20){const mid=[],up=[],lo=[];c.forEach((_,i)=>{if(i<n-1){mid.push(null);up.push(null);lo.push(null);return}
+  const w=c.slice(i-n+1,i+1),m=w.reduce((s,v)=>s+v)/n,sd=Math.sqrt(w.reduce((s,v)=>s+(v-m)**2,0)/n);mid.push(m);up.push(m+2*sd);lo.push(m-2*sd)});return{mid,up,lo}},
+ swings(C,k=3){const s=[];for(let i=k;i<C.length-k;i++){let H=1,L=1;for(let j=1;j<=k;j++){if(C[i].h<=C[i-j].h||C[i].h<=C[i+j].h)H=0;if(C[i].l>=C[i-j].l||C[i].l>=C[i+j].l)L=0}
+  if(H)s.push({i,type:'H',p:C[i].h,conf:i+k});if(L)s.push({i,type:'L',p:C[i].l,conf:i+k})}return s.sort((a,b)=>a.conf-b.conf)}};
+
+/* ============ MARKET STRUCTURE ============ */
+function analyze(C){const c=C.map(x=>x.c),A={C,c};
+ A.e={20:I.ema(c,20),50:I.ema(c,50),100:I.ema(c,100),200:I.ema(c,200)};A.rsi=I.rsi(c);A.macd=I.macd(c);Object.assign(A,I.atrAdx(C));A.bb=I.bb(c);A.sw=I.swings(C);A.swings=A.sw;
+ const ev=[],tr=Array(C.length).fill(0);let t=0,lH=null,lL=null,k=0;
+ for(let i=0;i<C.length;i++){while(k<A.sw.length&&A.sw[k].conf<=i){const s=A.sw[k++];if(s.type==='H')lH={...s,br:0};else lL={...s,br:0}}
+  if(lH&&!lH.br&&c[i]>lH.p){lH.br=1;ev.push({i,dir:1,kind:t===1||t===0?'BOS':'CHOCH',p:lH.p,si:lH.i});t=1}
+  else if(lL&&!lL.br&&c[i]<lL.p){lL.br=1;ev.push({i,dir:-1,kind:t===-1||t===0?'BOS':'CHOCH',p:lL.p,si:lL.i});t=-1}tr[i]=t}
+ A.ev=ev;A.tr=tr;
+ A.sr=i=>{const tol=(A.atr[i]||c[i]*.001)*.6,o=[];for(const p of A.sw.filter(x=>x.conf<=i).slice(-16).map(x=>x.p).sort((a,b)=>a-b)){const l=o[o.length-1];if(l&&p-l.p<=tol){l.p=(l.p*l.n+p)/(l.n+1);l.n++}else o.push({p,n:1})}return o};
+ A.fvg=[];for(let i=2;i<C.length;i++){const a=C[i-2],b=C[i];if(a.h<b.l)A.fvg.push({i:i-2,lo:a.h,hi:b.l,d:1});else if(a.l>b.h)A.fvg.push({i:i-2,lo:b.h,hi:a.l,d:-1})}
+ A.fvgOpen=A.fvg.filter(g=>!C.slice(g.i+3).some(x=>g.d>0?x.l<g.lo:x.h>g.hi)).slice(-4);
+ const L=C.length-1,at=A.atr[L]||0,sh=A.sw.filter(x=>x.type==='H'),sl=A.sw.filter(x=>x.type==='L');
+ A.eq=[];for(const arr of[sh.slice(-8),sl.slice(-8)])for(let x=0;x<arr.length;x++)for(let y=x+1;y<arr.length;y++)if(Math.abs(arr[x].p-arr[y].p)<.15*at)A.eq.push({p:(arr[x].p+arr[y].p)/2,type:arr[x].type});
+ const H=sh[sh.length-1],Lw=sl[sl.length-1];
+ A.supply=H?{lo:Math.max(C[H.i].o,C[H.i].c),hi:H.p,i:H.i}:null;A.demand=Lw?{lo:Lw.p,hi:Math.min(C[Lw.i].o,C[Lw.i].c),i:Lw.i}:null;
+ return A}
+
+/* ============ DECISION (one shared pure engine; see decision-engine.js) ============ */
+function getRates(){const o={};($('#rates').value||'').split(/[,\s]+/).forEach(x=>{const [k,v]=x.split('=');if(k&&+v>0)o[k.toUpperCase()]=+v});
+ if(st.a&&st.src[st.tf]!=='sim'&&!o[st.pair])o[st.pair]=st.a.c[st.a.c.length-1];return o}
+function sizing(dir,price,stopPrice){const ac=$('#acct').value,eq=+$('#bal').value,sy=st.pair,pips=Math.abs(price-stopPrice)/pipS(),rt=getRates(),
+ R=RiskMargin.calculatePositionSize({symbol:sy,accountCurrency:ac,equity:eq,riskPercent:+$('#rp').value,entryPrice:price,stopPrice,lotType:$('#lot').value,spreadPips:+$('#spr').value||0,slippagePips:+$('#slip').value||0,commissionPerStandardLotRoundTurn:+$('#com').value||0,rates:rt});
+ if(!R.ok)return{ok:false,errors:R.errors};
+ const M=RiskMargin.calculateRequiredMargin({symbol:sy,units:R.units,price,leverage:+$('#lev').value,accountCurrency:ac,rates:rt});
+ if(!M.ok)return{ok:false,errors:[M.error]};
+ return{ok:true,R,margin:M.requiredMargin,eq,ac,avail:eq-M.requiredMargin,level:eq/M.requiredMargin*100,pips}}
+function gates(){const tfs={};for(const t of TFS){const X=st.all[t];if(X)tfs[t]={lastCandleTimeUTC:X.C[X.C.length-1].t,intervalMinutes:MIN[t],source:st.src[t]}}
+ const fr=NoTradeGates.evaluateDataFreshness(tfs,{criticalTimeframes:[...CRIT,st.tf]}),
+ nw=NoTradeGates.evaluateNewsRisk(st.news,{pairCurrencies:[st.pair.slice(0,3),st.pair.slice(3,6)]}),g=NoTradeGates.evaluateNoTradeGates({news:nw,dataFreshness:fr});
+ if(!st.news.length)g.warnings.push('News risk unknown: no events entered');return g}
+function decide(){const A=st.a,i=A.C.length-1,htf=DecisionEngine.resolveHigherTimeframeBias(st.all,{criticalTimeframes:CRIT,asOfUTC:A.C[i].t}),
+ E=DecisionEngine.decide({series:A,i,higherTimeframeBias:htf,noTradeGates:gates()}),W=E.blockReasons.slice(),warn=E.warnings.slice(),p=E.price,at=E.atr||0,dir=E.direction;
+ if([...CRIT,st.tf].some(t=>st.src[t]==='sim')&&!W.includes(SIMMSG))W.push(SIMMSG);
+ Object.entries(st.gaps).forEach(([t,n])=>warn.push(t+' data has '+n+' gap(s) longer than 3 bars/72h'));
+ let setup=null;
+ if(!W.length&&E.setup){const s0=E.setup,z=sizing(s0.direction,p,s0.stopLoss);
+  if(!z.ok)W.push('Cannot size position: '+z.errors[0]);else{if(z.level<100)W.push('Insufficient margin for the computed size');if(+$('#spr').value>.2*z.pips)W.push('Excessive spread: over 20% of the stop distance')}
+  if(!W.length)setup=s0}
+ const ag=E.clusterAgreement.agreeing,conf=ag>=3?80:ag===2?55:30,e20=A.e[20][i],v=!setup?'WAIT':dir>0?'LONG':'SHORT',lv=DecisionEngine.nearestLevels(A.swings,i,p,at),rs=lv.find(x=>x.p>p),sp=lv.filter(x=>x.p<p).pop();
+ return{v,d:dir||1,S:E.score,ag,F:E.factors.map(x=>({n:x.name,v:x.value,t:x.text})),htf:htf.sign,W,warn,conf,p,at,eq:A.eq,
+  setup:!setup?null:{d:dir,zone:setup.entryZone,sl:setup.stopLoss,tp:setup.takeProfits,dist:setup.stopDistance,rr:setup.rr,conf,risk:conf>=75?1:.5,
+   cond:'Price holds '+(dir>0?'above ':'below ')+f(setup.stopLoss)+' and a '+st.tf+' candle closes back '+(dir>0?'above':'below')+' EMA20 ('+f(e20)+') inside the entry zone',inv:'A '+st.tf+' candle closes '+(dir>0?'below ':'above ')+f(setup.stopLoss)},
+  bull:'A '+st.tf+' close above '+(rs?f(rs.p):'the last swing high')+' with MACD histogram positive opens the way higher.',
+  bear:'A '+st.tf+' close below '+(sp?f(sp.p):'the last swing low')+' with MACD histogram negative opens the way lower.'}}
+
+/* ============ NEWS / CALENDAR (manual entries) ============ */
+function newsRender(){const now=Date.now();$('#newsList').innerHTML=st.news.length?'<table><tr><th>When</th><th>Ccy</th><th>Event</th><th>Impact</th></tr>'+
+  st.news.slice().sort((a,b)=>a.t-b.t).map(e=>'<tr><td>'+fmtT(e.t)+'</td><td>'+esc(e.ccy)+'</td><td>'+esc(e.name)+'</td><td class="'+(e.imp==='H'?'dn':'mu')+'">'+e.imp+'</td></tr>').join('')+'</table>':'<span class="mu">No events saved.</span>';
+ const g=NoTradeGates.evaluateNewsRisk(st.news,{pairCurrencies:[st.pair.slice(0,3),st.pair.slice(3,6)]});$('#newsStat').textContent=!st.news.length?'No events entered. News risk unknown.':g.ok?(g.blockReasons.concat(g.warnings)[0]||'No high-impact event inside the block window.'):g.error}
+
+/* ============ BACKTEST ============ */
+function backtest(A){const tm={};TFS.forEach(t=>{if(st.all[t])tm[t]=st.all[t]});
+ return DecisionEngine.runBacktest({series:A,timeframeMap:tm,criticalTimeframes:CRIT}).map(t=>({R:t.outcomeR,trend:A.adx[t.i]>=25}))}
+function stats(T){if(!T.length)return null;const w=T.filter(t=>t.R>0),l=T.filter(t=>t.R<=0),sum=a=>a.reduce((s,t)=>s+t.R,0);let eq=0,pk=0,dd=0,cl=0,mc=0;
+ for(const t of T){eq+=t.R;pk=Math.max(pk,eq);dd=Math.max(dd,pk-eq);if(t.R<=0){cl++;mc=Math.max(mc,cl)}else cl=0}
+ return{n:T.length,wr:w.length/T.length*100,aw:w.length?sum(w)/w.length:0,al:l.length?sum(l)/l.length:0,pf:l.length&&sum(l)?sum(w)/-sum(l):null,dd,ex:sum(T)/T.length,mc}}
+
+/* ============ RISK MANAGEMENT ============ */
+function risk(){const S=st.res&&st.res.setup,p=st.a?st.a.c[st.a.c.length-1]:null,out=$('#rout');
+ if(!p){out.innerHTML='<div class="warn">DATA UNAVAILABLE: no price to size against.</div>';return}
+ const d=S?S.d:1,z=sizing(d,p,p-d*(+$('#slp').value)*pipS());
+ if(!z.ok){out.innerHTML=z.errors.map(e=>'<div class="warn">'+esc(e)+'</div>').join('')+'<small>Add any FX rates needed, e.g. USDJPY=150.2</small>';return}
+ const R=z.R,mx=RiskMargin.convertAmount(1,st.pair.slice(0,3),z.ac,getRates()),maxU=mx.ok?z.eq*(+$('#lev').value)/mx.value:null,w=R.warnings.slice();
+ if(z.level<100)w.push('Margin level under 100%: insufficient margin.');if(+$('#spr').value>.2*z.pips)w.push('Spread is over 20% of the stop distance.');
+ out.innerHTML='<table><tr><td>Planned loss at stop (spread, slippage, commission included)</td><td class="n">'+z.ac+' '+R.plannedMonetaryLoss.toFixed(2)+'</td></tr><tr><td>Position size</td><td class="n">'+R.lots.toFixed(3)+' '+$('#lot').value+' lots ('+Math.round(R.units).toLocaleString()+' units)</td></tr><tr><td>Effective stop</td><td class="n">'+R.effectiveStopPips.toFixed(1)+' pips ('+R.rawStopPips.toFixed(1)+' raw)</td></tr></table>'+
+ '<h2 style="margin-top:8px">Margin (separate from risk)</h2><table><tr><td>Required margin</td><td class="n">'+z.margin.toFixed(2)+'</td></tr><tr><td>Available margin</td><td class="n">'+z.avail.toFixed(2)+'</td></tr><tr><td>Margin level</td><td class="n">'+z.level.toFixed(0)+'%</td></tr><tr><td>Max size by margin</td><td class="n">'+(maxU?Math.round(maxU).toLocaleString()+' units':'n/a')+'</td></tr></table>'+w.map(x=>'<div class="warn">'+esc(x)+'</div>').join('')+'<small>Leverage only sets the margin needed; it never changes what you lose at the stop.</small>'}
+
+/* ============ CHART RENDERING ============ */
+function draw(){const A=st.a;if(!A)return;const cv=$('#chart'),x=cv.getContext('2d'),dp=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;x.setTransform(dp,0,0,dp,0,0);
+ const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim(),N=Math.min(+$('#bars').value,A.C.length),L=A.C.length,s0=L-N,vis=A.C.slice(s0),S=st.res&&st.res.setup;
+ let hi=Math.max(...vis.map(v=>v.h)),lo=Math.min(...vis.map(v=>v.l));if(S){hi=Math.max(hi,S.tp[0],S.sl);lo=Math.min(lo,S.tp[0],S.sl)}const pd=(hi-lo)*.05;hi+=pd;lo-=pd;
+ const cw=(W-72)/N,X=k=>6+(k+.5)*cw,Y=p=>8+(hi-p)/(hi-lo)*(H-16),up=g('--up'),dn=g('--dn'),tx=g('--tx'),mu=g('--mu'),ln=g('--ln');
+ x.font='11px ui-monospace,monospace';x.lineWidth=1;x.fillStyle=mu;x.strokeStyle=ln;
+ for(let k=0;k<=5;k++){const p=lo+(hi-lo)*k/5,y=Y(p);x.beginPath();x.moveTo(0,y);x.lineTo(W-64,y);x.stroke();x.fillText(f(p),W-62,y+4)}
+ const line=(arr,col,dash)=>{x.beginPath();x.strokeStyle=col;x.setLineDash(dash);let s=0;for(let k=0;k<N;k++){const v=arr[s0+k];if(v==null)continue;s?x.lineTo(X(k),Y(v)):x.moveTo(X(k),Y(v));s=1}x.stroke();x.setLineDash([])};
+ const hl=(p,col,lab,dash,x0=0)=>{x.strokeStyle=col;x.fillStyle=col;x.setLineDash(dash);x.beginPath();x.moveTo(x0,Y(p));x.lineTo(W-64,Y(p));x.stroke();x.setLineDash([]);x.fillText(lab,x0+4,Y(p)-3)};
+ if($('#oF').checked){const box=(z,col,lab)=>{if(!z)return;const x0=Math.max(0,X(z.i-s0));x.fillStyle=col+'33';x.fillRect(x0,Y(z.hi),W-64-x0,Y(z.lo)-Y(z.hi));x.fillStyle=col;x.fillText(lab,W-190,Y(z.hi)+11)};
+  box(A.supply,dn,'supply zone (approx.)');box(A.demand,up,'demand zone (approx.)');A.fvgOpen.forEach(z=>box(z,z.d>0?up:dn,'FVG'));
+  (st.res?st.res.eq:[]).forEach(q=>hl(q.p,mu,'equal '+(q.type==='H'?'highs':'lows')+' (liquidity)',[2,3]))}
+ if($('#oS').checked)A.sr(L-1).filter(q=>q.p>lo&&q.p<hi).forEach(q=>hl(q.p,mu,(q.p<A.c[L-1]?'S':'R')+' x'+q.n,[6,4]));
+ if($('#oB').checked){line(A.bb.up,mu,[3,3]);line(A.bb.lo,mu,[3,3]);line(A.bb.mid,mu,[1,3])}
+ if($('#oE').checked){line(A.e[20],tx,[]);line(A.e[50],'#e3b341',[6,3]);line(A.e[200],'#a78bfa',[2,3])}
+ vis.forEach((v,k)=>{const c=v.c>=v.o?up:dn,xx=X(k),bw=Math.max(1,cw*.6);x.strokeStyle=c;x.beginPath();x.moveTo(xx,Y(v.h));x.lineTo(xx,Y(v.l));x.stroke();
+  const y1=Y(Math.max(v.o,v.c)),hh=Math.max(1,Math.abs(Y(v.o)-Y(v.c)));if(v.c>=v.o){x.fillStyle=g('--sf');x.fillRect(xx-bw/2,y1,bw,hh);x.strokeRect(xx-bw/2,y1,bw,hh)}else{x.fillStyle=c;x.fillRect(xx-bw/2,y1,bw,hh)}});
+ if($('#oM').checked)A.ev.filter(v=>v.i>=s0&&v.p>lo&&v.p<hi).forEach(v=>{x.strokeStyle=v.dir>0?up:dn;x.fillStyle=x.strokeStyle;x.setLineDash([2,2]);x.beginPath();x.moveTo(X(Math.max(0,v.si-s0)),Y(v.p));x.lineTo(X(v.i-s0),Y(v.p));x.stroke();x.setLineDash([]);x.fillText(v.kind+(v.dir>0?'▲':'▼'),X(v.i-s0)-14,Y(v.p)+(v.dir>0?-4:12))});
+ if(S){x.fillStyle=(S.d>0?up:dn)+'22';x.fillRect(0,Y(S.zone[1]),W-64,Y(S.zone[0])-Y(S.zone[1]));const col=S.d>0?up:dn;hl(S.zone[S.d>0?1:0],col,'ENTRY',[]);hl(S.sl,dn,'SL',[4,3],60);S.tp.forEach((t,k)=>hl(t,up,'TP'+(k+1),[4,3],60+k*40))}}
+
+/* ============ UI COMPONENTS ============ */
+function render(){const R=st.res,A=st.a,S=R.setup,vl={LONG:['L','▲ LONG CANDIDATE'],SHORT:['S','▼ SHORT CANDIDATE'],WAIT:['W','⏸ NO TRADE']}[R.v];
+ let h='<h2>Decision</h2><div class="v '+vl[0]+'">'+vl[1]+'</div><p class="mu"><b>Data: '+({live:'LIVE (Twelve Data)',csv:'IMPORTED CSV',sim:'SIMULATED'}[st.src[st.tf]]||'NONE')+'</b> · Price <span class="num">'+f(R.p)+'</span> · ATR <span class="num">'+f(R.at)+'</span> · '+st.pair+' '+st.tf+'</p>';
+ if(S){const band=agreementBand(S.conf);
+ h+='<table><tr><td>Entry zone</td><td class="n">'+f(S.zone[0])+' – '+f(S.zone[1])+'</td></tr><tr><td>Stop-loss</td><td class="n">'+f(S.sl)+'</td></tr>'+S.tp.map((t,k)=>'<tr><td>Take-profit '+(k+1)+'</td><td class="n">'+f(t)+' (1:'+S.rr[k]+')</td></tr>').join('')+
+  '<tr><td>Risk/reward</td><td class="n">1:'+S.rr[1]+' to TP2</td></tr><tr><td>Suggested risk</td><td class="n">'+S.risk+'% of equity</td></tr><tr><td>Agreement level</td><td class="n '+band.cls+'"><b>'+band.label+'</b></td></tr></table>'+
+  '<p><b>This is a count of agreeing technical factors, not a win probability or a guarantee.</b></p>'+
+  '<p><b>Before entry:</b> '+S.cond+'.</p><p><b>Invalidated if:</b> '+S.inv+'.</p>'}
+ else h+='<p><b>Why no trade:</b></p><ul>'+R.W.map(w=>'<li>'+w+'</li>').join('')+'</ul>';
+ h+=R.warn.map(w=>'<div class="warn">⚠ '+w+'</div>').join('');h+='<p><small>Analysis only. Not financial advice, not a prediction, no guarantee of profit.</small></p>';$('#decision').innerHTML=h;
+ $('#why').innerHTML='<div class="f">'+R.F.map(x=>'<span class="'+cls(x.v)+'">'+(x.v>0?'▲':x.v<0?'▼':'■')+' '+x.n+'</span><span>'+x.t+'</span>').join('')+'<b>HTF bias</b><span class="'+cls(R.htf)+'">'+(R.htf===null?'Not loaded':sym(R.htf))+'</span><b>Overall</b><span><b>'+vl[1]+'</b> (score '+R.S.toFixed(2)+', '+R.ag+'/3 clusters agree)</span></div>'+
+  '<p><b>Reasons this could fail…</b></p><ul>'+(R.F.filter(x=>Math.sign(x.v)===-R.d&&x.v).map(x=>'<li>'+x.n+' leans the other way: '+x.t+'</li>').concat(R.W,['Stop-hunts beyond obvious highs/lows can trigger the stop before the move','A high-impact news release can override any technical setup'])).map(z=>'<li>'+z+'</li>').join('').replace(/^/,'')+'</ul>';
+ $('#scen').innerHTML='<p><b class="up">▲ Bullish:</b> '+R.bull+'</p><p><b class="dn">▼ Bearish:</b> '+R.bear+'</p>';
+ const srcLbl={live:'\ud83d\udfe2 live',csv:'\ud83d\udcc4 imported',sim:'\u26aa simulated'};
+ $('#mtf').innerHTML='<table><tr><th>TF</th><th>Source</th><th>Structure</th><th>EMA50/200</th><th>RSI</th><th>ADX</th><th>Role</th></tr>'+TFS.map(t=>{const X=st.all[t];const src=srcLbl[st.src[t]]||'\u2716 none';if(!X)return'<tr><td>'+t+'</td><td>'+src+'</td><td colspan=4 class="mu">no data</td></tr>';const n=X.c.length-1,role=t==='1d'||t==='4h'?'Higher TF':t==='1h'?'Intermediate':t===st.tf?'Entry TF':'';
+  return'<tr><td>'+t+'</td><td>'+src+(st.gaps[t]?' ⚠'+st.gaps[t]+' gap(s)':'')+'</td><td class="'+cls(X.tr[n])+'">'+sym(X.tr[n])+'</td><td class="'+cls(X.e[50][n]-X.e[200][n])+'">'+(X.e[50][n]>X.e[200][n]?'50 > 200':'50 < 200')+'</td><td class="n">'+(X.rsi[n]||0).toFixed(0)+'</td><td class="n">'+(X.adx[n]||0).toFixed(0)+'</td><td>'+role+'</td></tr>'}).join('')+'</table><small>Position: '+(A.c[A.c.length-1]>A.e[200][A.c.length-1]?'above':'below')+' EMA200 on the entry timeframe.</small>';
+ if(S)$('#slp').value=Math.max(1,Math.round(S.dist/pipS()));risk();draw()}
+function hist(){const H=store.get('hist',[]);$('#hl').innerHTML=H.length?'<table>'+H.slice(0,12).map(h=>'<tr><td>'+fmtT(h.t)+'</td><td>'+h.pair+' '+h.tf+'</td><td>'+({LONG:'LONG CANDIDATE',SHORT:'SHORT CANDIDATE',WAIT:'NO TRADE'}[h.v]||h.v)+'</td><td class="n">'+h.p+'</td><td class="mu" title="'+esc((h.why||[]).join(' | '))+'">'+h.src+' ⓘ</td></tr>').join('')+'</table>':'<span class="mu">No analyses yet.</span>'}
+function journal(){const J=store.get('jrn',[]);$('#jl').innerHTML=J.slice(0,8).map(j=>'<div class="warn"><b>'+esc(j.pair)+'</b> '+fmtT(j.t)+'<br>'+esc(j.n)+'</div>').join('')}
+function badge(){const n=Object.keys(st.manual).length,vals=Object.values(st.src),live=vals.filter(v=>v==='live').length,sim=vals.filter(v=>v==='sim').length;
+ $('#badge').textContent=live?live+'/6 live, '+n+'/6 imported, '+sim+'/6 simulated':(n?n+'/6 timeframes imported, rest '+(st.demo?'SIMULATED':'UNAVAILABLE'):(st.demo?'DEMO MODE: simulated prices, no candidates':'DATA UNAVAILABLE: no live feed or import'));
+ $('#csvStat').innerHTML=n?'Imported: '+Object.keys(st.manual).map(t=>t+' ('+st.manual[t].length+' bars)').join(', '):'<span class="mu">No timeframes imported yet.</span>'}
+
+/* ============ CONTROLLER ============ */
+async function run(){
+ try{
+ const all={};st.liveErr={};st.gaps={};for(const t of TFS){const C=await Data.get(st.pair,t);all[t]=C&&C.length>=210?Object.assign(analyze(C),{intervalMinutes:MIN[t]}):null;const gp=C?DataPrep.detectGaps(C,MIN[t]).length:0;if(gp)st.gaps[t]=gp}
+ if(st.live){const errs=Object.entries(st.liveErr);$('#liveStat').innerHTML=errs.length?errs.map(([t,m])=>'<div>'+t+': '+esc(m)+'</div>').join(''):'Live Twelve Data prices in use.';$('#liveStat').className=errs.length?'warn':'warn'}
+ st.all=all;st.a=all[st.tf];if(!st.a){$('#decision').innerHTML='<h2>Decision</h2><div class="v W">DATA UNAVAILABLE</div><div class="warn">No live feed connected, no valid imported candles for '+st.tf+' (210 needed), and demo mode is off. No signal is generated.</div>';$('#why').innerHTML='';$('#scen').innerHTML='';$('#mtf').innerHTML='';$('#stamp').textContent='';badge();risk();return}
+ st.res=decide();st.stamp=new Date();$('#stamp').textContent='Updated '+fmtT(st.stamp)+' · '+st.pair+' '+st.tf+' · source: '+({live:'Twelve Data',csv:'CSV import',sim:'SIMULATED'}[st.src[st.tf]])+' · last candle '+Math.round((Date.now()-st.a.C[st.a.C.length-1].t)/60000)+'m old · bid/ask: not provided by feed · spread: '+(+$('#spr').value||0)+' pips (entered)';badge();render();
+ const H=store.get('hist',[]);H.unshift({t:Date.now(),pair:st.pair,tf:st.tf,v:st.res.v,p:f(st.res.p),src:st.src[st.tf],why:st.res.W.concat(st.res.warn).slice(0,6),agree:st.res.ag,htf:st.res.htf,last:st.a.C[st.a.C.length-1].t});store.set('hist',H.slice(0,50));hist();
+ }catch(err){
+  // Error boundary: a malformed import, a divide-by-zero from bad data, or
+  // any other unexpected failure must never leave a blank or frozen page
+  // with no explanation (fix for audit UX-4). Surface it plainly instead.
+  console.error('Analysis pipeline failed:', err);
+  $('#decision').innerHTML='<h2>Decision</h2><div class="v W">\u26a0 ANALYSIS FAILED</div>'+
+   '<div class="warn">The analysis could not complete: '+esc(err&&err.message?err.message:String(err))+
+   '</div><p class="mu">This is usually bad or malformed data (a manual import, a pair/timeframe with too little history). '+
+   'No candidate is shown because none could be safely computed \u2014 check your inputs and try Analyze again.</p>';
+  $('#why').innerHTML='';$('#scen').innerHTML='';$('#mtf').innerHTML='<span class="mu">Unavailable after an analysis error.</span>';
+ }
+}
+$('#pair').innerHTML=Object.keys(PAIRS).map(p=>'<option>'+p+'</option>').join('');$('#tf').innerHTML=TFS.map(t=>'<option'+(t==='15m'?' selected':'')+'>'+t+'</option>').join('');
+$('#pair').onchange=e=>{st.pair=e.target.value;run()};$('#tf').onchange=e=>{st.tf=e.target.value;run()};$('#go').onclick=run;
+$('#reseed').onclick=()=>{st.seed++;run()};['oE','oB','oS','oM','oF','bars'].forEach(i=>$('#'+i).onchange=draw);
+['bal','acct','rp','slp','lot','spr','slip','com','lev','rates'].forEach(i=>$('#'+i).oninput=risk);addEventListener('resize',draw);
+$('#csvTf').innerHTML=TFS.map(t=>'<option'+(t===st.tf?' selected':'')+'>'+t+'</option>').join('');
+$('#csvBulk').onchange=e=>{$('#csvHelp').innerHTML=e.target.checked
+ ?'Mark each block with the timeframe first, e.g. <code>#1h</code>, then its candles below it, then <code>#4h</code>, and so on.'
+ :'One candle per line: <code>time,open,high,low,close</code>.';$('#csvTf').closest('label').style.display=e.target.checked?'none':''};
+function loadCsv(tf,rows,msgs){const r=DataPrep.prepareCandles(rows,{source:'csv',minBars:210,expectedIntervalMinutes:MIN[tf]});
+ if(!r.ok){msgs.push(tf+': REJECTED - '+(r.rejected[0]?r.rejected[0].reason:'no valid rows')+' ('+r.rejected.length+' problem row(s))');return false}
+ st.manual[tf]=r.candles;if(r.duplicateCount)msgs.push(tf+': '+r.duplicateCount+' duplicate timestamp(s) removed');if(r.rejected.length)msgs.push(tf+': '+r.rejected.length+' invalid row(s) skipped');return true}
+$('#lc').onclick=()=>{const msgs=[];let any=false;
+ if($('#csvBulk').checked){const secs=Data.parseBulk($('#csv').value);for(const t in secs)any=loadCsv(t,secs[t],msgs)||any}
+ else any=loadCsv($('#csvTf').value,Data.parseCSV($('#csv').value),msgs);
+ $('#csvMsg').innerHTML=msgs.map(m=>'<div class="warn">'+esc(m)+'</div>').join('');if(any)run()};
+$('#demoToggle').onchange=e=>{st.demo=e.target.checked;run()};
+$('#ud').onclick=()=>{st.manual={};run()};
+$('#js').onclick=()=>{const n=$('#jn').value.trim();if(!n)return;const J=store.get('jrn',[]);J.unshift({t:Date.now(),pair:st.pair,n});store.set('jrn',J.slice(0,50));$('#jn').value='';journal()};
+$('#newsSave').onclick=()=>{const rows=[],bad=[];for(const ln of $('#newsIn').value.trim().split(/\r?\n/)){const t=ln.trim();if(!t)continue;
+  const c=t.split(',').map(x=>x.trim());if(c.length<4){bad.push(t);continue}const [ts,ccy,...rest]=c,imp=(rest.pop()||'').toUpperCase(),name=rest.join(',');
+  const pu=DataPrep.parseUTC(ts),tm=pu.ok?pu.t:NaN;if(isNaN(tm)||!/^[A-Z]{3}$/.test(ccy)||!['H','M','L'].includes(imp)){bad.push(t);continue}rows.push({t:tm,ccy,name:name||'Event',imp})}
+ if(bad.length)alert('Skipped '+bad.length+' line(s) not in time,currency,event,impact format (time must end in Z or an offset like +01:00).');
+ st.news=rows.concat(st.news.filter(e=>!rows.some(r=>r.t===e.t&&r.ccy===e.ccy&&r.name===e.name)));store.set('news',st.news);$('#newsIn').value='';newsRender();if(st.res){st.res=decide();render()}};
+$('#bt').onclick=()=>{if(!st.a)return;const T=backtest(st.a),s=stats(T);if(!s){$('#btout').innerHTML='<p class="mu">No qualifying trades in this sample.</p>';return}
+ const sub=k=>{const q=stats(T.filter(t=>t.trend===k));return q?q.n+' trades, '+q.wr.toFixed(0)+'% win, exp '+q.ex.toFixed(2)+'R':'none'};
+ $('#btout').innerHTML='<table><tr><td>Trades</td><td class="n">'+s.n+'</td></tr><tr><td>Win rate</td><td class="n">'+s.wr.toFixed(1)+'%</td></tr><tr><td>Avg win / loss</td><td class="n">+'+s.aw.toFixed(2)+'R / '+s.al.toFixed(2)+'R</td></tr><tr><td>Profit factor</td><td class="n">'+(s.pf?s.pf.toFixed(2):'n/a')+'</td></tr><tr><td>Expectancy</td><td class="n">'+s.ex.toFixed(2)+'R</td></tr><tr><td>Max drawdown</td><td class="n">'+s.dd.toFixed(1)+'R</td></tr><tr><td>Avg risk/reward</td><td class="n">1:2.5 target</td></tr><tr><td>Max consecutive losses</td><td class="n">'+s.mc+'</td></tr><tr><td>Trending (ADX≥25)</td><td>'+sub(true)+'</td></tr><tr><td>Ranging (ADX&lt;25)</td><td>'+sub(false)+'</td></tr></table><small>'+(s.n<100?'<b>Only '+s.n+' trades: too few to be meaningful (need 100+).</b> ':'')+'Uses the same decision function as live analysis, including higher-timeframe bias at each bar. SL first if both hit; 60-bar timeout; spread, commission and slippage are not modeled. '+(st.manual[st.tf]?'':'Run on simulated data: meaningless as evidence of edge. ')+'History does not guarantee future results.</small>'};
+/* ============ CHART SCREENSHOT CROSS-CHECK (sample capability) ============ */
+(async()=>{const gate=$('#ssGate'),body=$('#ssBody');
+ try{st.sample=await claude.use('sample')}catch(e){st.sample=null}
+ if(!st.sample){gate.textContent='Image analysis isn\u2019t available in this view.';return}
+ let lims=null;try{lims=await st.sample.limits()}catch(e){}
+ if(!lims||!lims.images){gate.textContent='This view can\u2019t send images to Claude yet.';return}
+ $('#ssFile').accept=lims.images.mediaTypes.join(',');gate.hidden=true;body.hidden=false})();
+$('#ssFile').onchange=()=>{const f0=$('#ssFile').files[0];$('#ssPrev').innerHTML=f0?'<small>'+esc(f0.name)+' ('+(f0.size/1024|0)+' KB)</small>':''};
+$('#ssGo').onclick=async()=>{const f0=$('#ssFile').files[0];if(!f0){alert('Choose a chart screenshot first.');return}
+ if(!st.sample){return}const out=$('#ssOut'),btn=$('#ssGo');btn.disabled=true;out.innerHTML='<p class="mu">Thinking…</p>';
+ const R=st.res,ctl=new AbortController();
+ const summary=R?('Computed read for '+st.pair+' '+st.tf+': '+R.v+(R.setup?(' direction '+(R.setup.d>0?'long':'short')):'')+
+   ', confluence score '+R.S.toFixed(1)+' with '+R.ag+'/3 clusters agreeing, structure '+sym(st.a.tr[st.a.c.length-1])+', RSI '+st.a.rsi[st.a.c.length-1].toFixed(0)+
+   ', ADX '+(st.a.adx[st.a.c.length-1]||0).toFixed(0)+'.'):'No computed analysis is available yet.';
+ const prompt='You are looking at a screenshot of a trading chart. In plain language: 1) state the visible trend direction and any obvious structure (higher highs/lows, ranges, channels); 2) name any candlestick or chart patterns you can actually see; 3) note any indicators visibly plotted and what they show. Then compare your visual read against this computed technical summary and say whether they agree, partly agree, or conflict, in 5-8 short sentences total. Do not invent price levels you cannot read from the image.\n\n'+summary;
+ try{const {text}=await st.sample(prompt,{images:[f0],modelTier:'default',cache:false,signal:ctl.signal,onText:({text})=>{out.textContent=text}});out.textContent=text}
+ catch(e){const m={not_granted:'You declined image analysis for this page.',images_unavailable:'This view can\u2019t send images.',image_rejected:'That file couldn\u2019t be read — try a PNG/JPEG screenshot.',rate_limited:'Too many requests right now — try again shortly.',refused:'Claude declined to analyze this image.',empty_completion:'No answer came back — try again.',upstream_error:'A temporary error occurred — try again.'}[e.code]||('Error: '+e.message);
+  out.innerHTML='<div class="warn">'+m+'</div>'+(e.text?'<p>'+esc(e.text)+'</p>':'')}
+ finally{btn.disabled=false}};
+
+/* ============ LIVE DATA (Twelve Data via mcp capability) ============ */
+(async()=>{const tgl=$('#liveToggle');try{st.mcp=await claude.use('mcp')}catch(e){st.mcp=null}
+ if(!st.mcp){$('#liveStat').textContent='Live connector isn\u2019t available in this view. Using simulated/imported data.';return}
+ tgl.disabled=false;$('#liveStat').textContent='Live data ready \u2014 tick the box to pull real Twelve Data prices.'})();
+$('#liveToggle').onchange=async e=>{
+ if(e.target.checked){$('#liveStat').textContent='Checking Twelve Data connection\u2026';
+  try{const out=await st.mcp.callTool('Twelve Data','get_quote',{symbol:tdSymbol(st.pair)},{cache:{staleTime:0,gcTime:30000}});
+   if(!out||!out.payload){throw{code:'upstream_error',message:'empty response'}}
+   st.live=true;$('#liveStat').textContent='Connected \u2014 pulling live Twelve Data prices per timeframe.'}
+  catch(err){st.live=false;e.target.checked=false;$('#liveStat').textContent=mcpErrMsg(err);return}}
+ else{st.live=false;$('#liveStat').textContent='Live data off. Using imported/simulated data.'}
+ run()};
+
+st.news=store.get('news',[]);newsRender();
+$('#csvTf').closest('label').style.display='';
+hist();journal();badge();
+
+/* ============ FIRST-RUN RISK ACKNOWLEDGMENT (fix for audit RG-1) ============
+   No candidate/decision panel is shown until the person has dismissed this
+   once; the choice is then remembered per-browser via the existing store
+   helper (localStorage with an in-memory fallback, same as journal/history). */
+if(store.get('riskAck',false)){run()}
+else{$('#riskModal').style.display='flex';
+ $('#riskAckBtn').onclick=()=>{store.set('riskAck',true);$('#riskModal').style.display='none';run()};}
+</script></body></html>
